@@ -1,0 +1,882 @@
+<title>Agenda do Conselho</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<style>
+/* Layout: app shell (side or top nav) + main column; options drawer on the right; tab bar on phones. */
+:root {
+  --bg: #f3f5f5; --surface: #ffffff; --surface-2: #eaeeee; --fg: #131a1c; --muted: #56656a; --line: #d9e0e1;
+  --ok: #17734a; --warn: #9a5800; --bad: #b42318; --done: #66737a;
+  --acc: var(--acc-l); --acc-fg: #ffffff;
+  --font-ui: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --radius: 10px; --pad: 18px; --row: 46px; --gap: 16px;
+  --shadow: 0 1px 2px rgba(16,24,28,.06), 0 4px 16px rgba(16,24,28,.05);
+}
+:root[data-palette="petroleo"] { --acc-l: #0c5b67; --acc-d: #63c2cf; }
+:root[data-palette="marinho"]  { --acc-l: #1e3a8a; --acc-d: #91a9ff; }
+:root[data-palette="grafite"]  { --acc-l: #7a5a10; --acc-d: #dcb860; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1315; --surface: #151c1f; --surface-2: #1c2528; --fg: #e7edee; --muted: #97a5a9; --line: #29353a;
+    --ok: #5cc48d; --warn: #f0b35a; --bad: #f07a6e; --done: #8a979c;
+    --acc: var(--acc-d); --acc-fg: #0b1214;
+    --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1315; --surface: #151c1f; --surface-2: #1c2528; --fg: #e7edee; --muted: #97a5a9; --line: #29353a;
+  --ok: #5cc48d; --warn: #f0b35a; --bad: #f07a6e; --done: #8a979c;
+  --acc: var(--acc-d); --acc-fg: #0b1214;
+  --shadow: 0 1px 2px rgba(0,0,0,.4); color-scheme: dark;
+}
+:root[data-density="compact"] { --pad: 12px; --row: 38px; --gap: 10px; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; border-radius: 6px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+.serif { font-family: var(--font-display); font-weight: 600; letter-spacing: -.01em; }
+.muted { color: var(--muted); }
+.tnum { font-variant-numeric: tabular-nums; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.soft-acc { background: color-mix(in srgb, var(--acc) 12%, transparent); color: var(--acc); }
+
+/* ---------- Shell ---------- */
+.app { display: grid; grid-template-columns: 236px minmax(0,1fr); min-height: 100%; }
+.app[data-nav="top"] { grid-template-columns: minmax(0,1fr); }
+.sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 4px; padding: 20px 14px; background: var(--surface); border-right: 1px solid var(--line); }
+.app[data-nav="top"] .sidebar { display: none; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; }
+.brand-mark { width: 34px; height: 34px; border-radius: 9px; background: var(--acc); color: var(--acc-fg); display: grid; place-items: center; font-family: var(--font-display); font-weight: 600; font-size: 17px; }
+.brand b { display: block; font-size: 14px; line-height: 1.2; }
+.brand small { color: var(--muted); font-size: 12px; }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; font-weight: 600; border: 0; background: none; text-align: left; width: 100%; }
+.nav-link:hover { background: var(--surface-2); color: var(--fg); }
+.nav-link[aria-current="page"] { background: color-mix(in srgb, var(--acc) 12%, transparent); color: var(--acc); }
+.nav-link svg { width: 18px; height: 18px; flex: none; }
+.nav-count { margin-left: auto; font-size: 11px; background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); padding: 1px 7px; border-radius: 99px; }
+.side-foot { margin-top: auto; display: flex; gap: 10px; align-items: center; padding: 10px 8px 0; border-top: 1px solid var(--line); }
+
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; align-items: center; gap: 12px; padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.topbar .brand { padding: 0; display: none; }
+.app[data-nav="top"] .topbar .brand { display: flex; }
+.topnav { display: none; gap: 2px; }
+.app[data-nav="top"] .topnav { display: flex; }
+.topnav .nav-link { width: auto; padding: 7px 11px; }
+.topnav .nav-link svg { display: none; }
+.search { flex: 1; max-width: 360px; display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 0 10px; height: 36px; color: var(--muted); margin-left: auto; }
+.search input { border: 0; background: none; outline: none; width: 100%; min-width: 0; }
+.main-col { min-width: 0; display: flex; flex-direction: column; }
+main { padding-block: 24px 96px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 1180px; width: 100%; margin: 0 auto; }
+.tabbar { display: none; }
+
+/* ---------- Primitives ---------- */
+a.btn { text-decoration: none; color: inherit; }
+a.btn-primary { color: var(--acc-fg); }
+.btn { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; white-space: nowrap; }
+.btn:hover { border-color: color-mix(in srgb, var(--fg) 30%, var(--line)); }
+.btn svg { width: 16px; height: 16px; }
+.btn-primary { background: var(--acc); color: var(--acc-fg); border-color: transparent; }
+.btn-primary:hover { filter: brightness(1.08); border-color: transparent; }
+.btn-ghost { border-color: transparent; background: none; }
+.btn-sm { height: 30px; padding: 0 10px; font-size: 13px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.pad { padding: var(--pad); }
+.row { display: flex; gap: var(--gap); align-items: center; flex-wrap: wrap; }
+.stack { display: flex; flex-direction: column; gap: var(--gap); }
+.grid-2 { display: grid; grid-template-columns: minmax(0,1.6fr) minmax(0,1fr); gap: var(--gap); }
+.grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--gap); }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+.page-head h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(24px, 3vw, 32px); letter-spacing: -.015em; line-height: 1.15; }
+.section-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.section-title h2 { font-size: 15px; font-weight: 700; }
+
+.chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.chip.plain::before { display: none; }
+.s-ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, transparent); }
+.s-warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+.s-bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 13%, transparent); }
+.s-done { color: var(--done); background: color-mix(in srgb, var(--done) 14%, transparent); }
+.s-acc { color: var(--acc); background: color-mix(in srgb, var(--acc) 13%, transparent); }
+.tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+
+.avatar { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 800; background: color-mix(in srgb, var(--acc) 16%, var(--surface)); color: var(--acc); flex: none; }
+.avatar.lg { width: 46px; height: 46px; font-size: 15px; }
+.avatars { display: flex; }
+.avatars .avatar { border: 2px solid var(--surface); margin-left: -8px; }
+.avatars .avatar:first-child { margin-left: 0; }
+
+.list { display: flex; flex-direction: column; }
+.list-item { display: flex; align-items: center; gap: 12px; min-height: var(--row); padding: 10px var(--pad); border-top: 1px solid var(--line); }
+.list-item:first-child { border-top: 0; }
+.list-item.click { cursor: pointer; }
+.list-item.click:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+.li-main { min-width: 0; flex: 1; }
+.li-title { font-weight: 600; }
+.li-sub { color: var(--muted); font-size: 13px; }
+
+.date-block { width: 52px; flex: none; text-align: center; border-radius: 8px; border: 1px solid var(--line); padding: 4px 0; background: var(--surface); }
+.date-block b { display: block; font-size: 19px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.date-block span { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+
+.bar { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; position: relative; }
+.bar > i { position: absolute; inset: 0 auto 0 0; background: var(--acc); border-radius: 99px; }
+.bar.warn > i { background: var(--warn); }
+
+/* ---------- Home A: next meeting ---------- */
+.hero { padding: calc(var(--pad) + 6px); display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 20px; position: relative; overflow: hidden; }
+.hero h2 { font-family: var(--font-display); font-weight: 600; font-size: clamp(22px, 2.6vw, 28px); line-height: 1.2; margin: 6px 0 10px; }
+.countdown { text-align: center; padding: 14px 18px; border-radius: 12px; background: color-mix(in srgb, var(--acc) 10%, transparent); color: var(--acc); align-self: start; }
+.countdown b { display: block; font-family: var(--font-display); font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+.countdown span { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.meta { display: flex; gap: 6px 18px; flex-wrap: wrap; color: var(--muted); font-weight: 500; }
+.meta span { display: inline-flex; align-items: center; gap: 6px; }
+.meta svg { width: 15px; height: 15px; }
+.checklist { display: grid; gap: 8px; margin-top: 18px; }
+.check { display: flex; gap: 10px; align-items: flex-start; }
+.check .dot { width: 20px; height: 20px; border-radius: 50%; flex: none; display: grid; place-items: center; margin-top: 1px; }
+.check .dot svg { width: 12px; height: 12px; }
+.check.ok .dot { background: var(--ok); color: var(--surface); }
+.check.pending .dot { border: 2px solid var(--warn); }
+.quorum { display: grid; gap: 6px; margin-top: 18px; max-width: 440px; }
+
+/* ---------- KPI ---------- */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: var(--gap); margin-bottom: var(--gap); }
+.kpi { padding: var(--pad); border-left: 4px solid var(--k, var(--line)); }
+.kpi b { display: block; font-size: 30px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; margin-top: 4px; color: var(--k, var(--fg)); }
+
+/* ---------- Calendar ---------- */
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); border-top: 1px solid var(--line); }
+.cal-h { padding: 8px; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid var(--line); }
+.cal-d { min-height: 84px; padding: 6px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 12px; min-width: 0; }
+.cal-d:nth-child(7n) { border-right: 0; }
+.cal-d.out { color: var(--muted); background: color-mix(in srgb, var(--surface-2) 45%, transparent); }
+.cal-d .n { font-weight: 700; font-variant-numeric: tabular-nums; }
+.cal-d.today .n { background: var(--acc); color: var(--acc-fg); border-radius: 6px; padding: 0 6px; }
+.cal-ev { display: block; margin-top: 4px; padding: 2px 6px; border-radius: 5px; font-size: 11px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 0; width: 100%; text-align: left; }
+.cal-ev.due { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
+
+.year { display: grid; grid-template-columns: repeat(12, minmax(0,1fr)); gap: 6px; }
+.month { padding: 10px 8px; border-radius: 8px; background: var(--surface-2); min-width: 0; }
+.month.now { outline: 2px solid var(--acc); }
+.month small { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.month .pips { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+.pip { width: 9px; height: 9px; border-radius: 50%; background: var(--acc); }
+.pip.com { background: transparent; border: 2px solid var(--acc); }
+.pip.past { opacity: .4; }
+
+/* ---------- Meeting ---------- */
+.steps { display: flex; gap: 0; margin: 4px 0 0; overflow-x: auto; padding-bottom: 2px; }
+.step { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.step + .step::before { content: ""; width: 28px; height: 2px; background: var(--line); margin: 0 8px; }
+.step i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-style: normal; font-size: 11px; }
+.step.done { color: var(--fg); }
+.step.done i { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.step.cur { color: var(--acc); }
+.step.cur i { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 14%, transparent); }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin: 20px 0 16px; overflow-x: auto; }
+.tab { padding: 10px 14px; border: 0; background: none; font-weight: 700; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; display: inline-flex; gap: 6px; align-items: center; }
+.tab[aria-selected="true"] { color: var(--acc); border-color: var(--acc); }
+.tab .tag { height: 18px; padding: 0 6px; font-size: 11px; }
+.single-index { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0; }
+.single-sec { margin-top: 26px; scroll-margin-top: 80px; }
+.agenda-item { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; gap: 12px; padding: 14px var(--pad); border-top: 1px solid var(--line); align-items: start; }
+.agenda-item:first-child { border-top: 0; }
+.agenda-num { width: 28px; height: 28px; border-radius: 8px; background: var(--surface-2); display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+.agenda-item.auto { background: color-mix(in srgb, var(--acc) 5%, transparent); }
+.auto-list { margin-top: 10px; display: grid; gap: 6px; }
+.auto-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.t-del { color: var(--acc); background: color-mix(in srgb, var(--acc) 12%, transparent); }
+.t-inf { color: var(--muted); background: var(--surface-2); }
+.t-dis { color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.file-ic { width: 34px; height: 40px; border-radius: 6px; flex: none; display: grid; place-items: end center; padding-bottom: 4px; font-size: 9px; font-weight: 800; color: var(--surface); }
+.file-ic.pdf { background: #b42318; } .file-ic.xls { background: #17734a; } .file-ic.ppt { background: #b9541a; } .file-ic.doc { background: #1e4fa8; }
+.drop { border: 2px dashed var(--line); border-radius: var(--radius); padding: 22px 16px; text-align: center; display: grid; gap: 6px; justify-items: center; cursor: pointer; background: var(--surface); transition: border-color .15s, background .15s; }
+.drop:hover, .drop.over { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 6%, var(--surface)); }
+.drop-ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--acc) 12%, transparent); color: var(--acc); }
+.link { color: var(--acc); font-weight: 700; text-decoration: underline; cursor: pointer; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.file-ic.img { background: #6b4fa0; }
+.notify { background: color-mix(in srgb, var(--acc) 7%, transparent); }
+.minutes { font-family: var(--font-display); font-size: 16px; line-height: 1.7; max-width: 68ch; }
+.minutes p { margin: 0 0 12px; }
+.minutes .hl { background: color-mix(in srgb, var(--warn) 18%, transparent); border-radius: 3px; padding: 0 2px; }
+
+/* ---------- Actions ---------- */
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter { height: 32px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 13px; }
+.filter[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.kanban { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: var(--gap); overflow-x: auto; padding-bottom: 6px; }
+.col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.col-h { display: flex; align-items: center; justify-content: space-between; padding: 2px 4px 4px; font-weight: 700; }
+.a-card { padding: 12px; display: grid; gap: 8px; border-left: 3px solid var(--s); }
+.a-card .t { font-weight: 700; line-height: 1.35; }
+.a-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; padding: 10px var(--pad); border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px var(--pad); border-bottom: 1px solid var(--line); vertical-align: middle; height: var(--row); }
+tr:last-child td { border-bottom: 0; }
+.tl { position: relative; padding-left: 22px; display: grid; gap: 18px; }
+.tl::before { content: ""; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; background: var(--line); }
+.tl-m { position: relative; }
+.tl-m::before { content: ""; position: absolute; left: -22px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 3px solid var(--acc); }
+.tl-m h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 8px; }
+
+/* ---------- People ---------- */
+.person { padding: var(--pad); display: grid; gap: 12px; }
+.person-top { display: flex; gap: 12px; align-items: center; }
+.channels { display: flex; gap: 6px; }
+.ch { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; background: var(--surface-2); color: var(--muted); }
+.ch.on { background: color-mix(in srgb, var(--acc) 13%, transparent); color: var(--acc); }
+.ch svg { width: 14px; height: 14px; }
+
+/* ---------- Drawer (design options) ---------- */
+.fab { position: fixed; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 40; height: 46px; padding: 0 18px; border-radius: 99px; border: 0; background: var(--fg); color: var(--bg); font-weight: 800; display: inline-flex; gap: 8px; align-items: center; box-shadow: 0 6px 24px rgba(0,0,0,.22); }
+.fab svg { width: 18px; height: 18px; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(400px, 100%); z-index: 60; background: var(--surface); border-left: 1px solid var(--line); box-shadow: -12px 0 40px rgba(0,0,0,.14); display: flex; flex-direction: column; transform: translateX(105%); transition: transform .25s ease; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.drawer.open { transform: none; }
+.drawer-h { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.drawer-h h2 { font-size: 16px; }
+.drawer-b { overflow-y: auto; padding: 6px 18px 24px; flex: 1; }
+.opt { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.opt h3 { font-size: 13px; font-weight: 800; display: flex; gap: 8px; align-items: baseline; }
+.opt h3 .num { color: var(--muted); font-variant-numeric: tabular-nums; }
+.opt p { margin: 4px 0 10px; color: var(--muted); font-size: 13px; }
+.choices { display: grid; gap: 6px; }
+.choice { display: grid; grid-template-columns: 18px minmax(0,1fr); gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); text-align: left; }
+.choice:hover { border-color: color-mix(in srgb, var(--acc) 50%, var(--line)); }
+.choice[aria-checked="true"] { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 7%, var(--surface)); }
+.radio { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); margin-top: 1px; }
+.choice[aria-checked="true"] .radio { border: 5px solid var(--acc); }
+.choice b { font-size: 13px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.choice small { color: var(--muted); font-size: 12px; display: block; }
+.rec { font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, transparent); padding: 1px 6px; border-radius: 4px; }
+.swatches { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+.sw { border: 1px solid var(--line); border-radius: 9px; padding: 8px; background: var(--surface); text-align: left; display: grid; gap: 6px; font-size: 12px; font-weight: 700; }
+.sw i { height: 26px; border-radius: 6px; display: block; }
+.sw[aria-checked="true"] { border-color: var(--fg); box-shadow: 0 0 0 1px var(--fg); }
+.summary { margin-top: 18px; padding: 14px; border-radius: 10px; background: var(--surface-2); font-size: 13px; }
+.summary ol { margin: 8px 0 12px; padding-left: 20px; }
+@media (min-width: 1280px) { body.docked .app { margin-right: 400px; } body.docked .fab { display: none; } }
+.scrim { position: fixed; inset: 0; z-index: 55; background: rgba(8,12,14,.35); }
+
+/* ---------- Modal ---------- */
+.modal { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 16px; background: rgba(8,12,14,.45); }
+.modal-card { width: min(980px, 100%); max-height: calc(100% - 16px); overflow: auto; background: var(--surface); border-radius: 14px; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,.3); display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+.modal-form { padding: 22px; display: grid; gap: 14px; align-content: start; }
+.modal-prev { padding: 22px; background: var(--surface-2); border-left: 1px solid var(--line); display: grid; gap: 14px; align-content: start; }
+.field { display: grid; gap: 5px; }
+.field label, .field .lbl { font-size: 12px; font-weight: 700; color: var(--muted); }
+.input { height: 38px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 0 10px; width: 100%; min-width: 0; }
+textarea.input { height: auto; min-height: 84px; padding: 8px 10px; resize: vertical; }
+.f2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { flex: 1; border: 0; background: var(--surface); padding: 8px 6px; font-weight: 600; font-size: 13px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--acc); color: var(--acc-fg); }
+.tog { display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: 13px; }
+.tog input { accent-color: var(--acc); width: 16px; height: 16px; }
+.msg-email { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 13px; }
+.msg-email .hd { padding: 10px 14px; border-bottom: 1px solid var(--line); color: var(--muted); display: grid; gap: 2px; }
+.msg-email .bd { padding: 16px; display: grid; gap: 10px; }
+.msg-email .band { height: 6px; background: var(--acc); }
+.msg-email .ctas { display: flex; gap: 8px; flex-wrap: wrap; }
+.wa { background: #e7ddd3; border-radius: 10px; padding: 14px; }
+.wa-b { background: #ffffff; color: #111b21; border-radius: 0 10px 10px 10px; padding: 10px 12px; max-width: 92%; font-size: 13px; box-shadow: 0 1px 1px rgba(0,0,0,.1); white-space: pre-line; }
+.wa-btns { display: grid; gap: 1px; margin-top: 6px; max-width: 92%; }
+.wa-btns span { background: #ffffff; color: #027eb5; text-align: center; padding: 8px; font-weight: 700; font-size: 13px; }
+.wa-btns span:first-child { border-radius: 0; } .wa-btns span:last-child { border-radius: 0 0 10px 10px; }
+.sms { background: var(--surface); border-radius: 10px; padding: 14px; border: 1px solid var(--line); }
+.sms-b { background: #e9e9eb; color: #111; border-radius: 16px; padding: 10px 12px; max-width: 88%; font-size: 13px; }
+:root[data-theme="dark"] .wa { background: #0b141a; }
+:root[data-theme="dark"] .wa-b, :root[data-theme="dark"] .wa-btns span { background: #202c33; color: #e9edef; }
+:root[data-theme="dark"] .wa-btns span { color: #53bdeb; }
+:root[data-theme="dark"] .sms-b { background: #3a3a3c; color: #f2f2f2; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .wa { background: #0b141a; }
+  :root:not([data-theme="light"]) .wa-b, :root:not([data-theme="light"]) .wa-btns span { background: #202c33; color: #e9edef; }
+  :root:not([data-theme="light"]) .wa-btns span { color: #53bdeb; }
+  :root:not([data-theme="light"]) .sms-b { background: #3a3a3c; color: #f2f2f2; }
+}
+.toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 80; background: var(--fg); color: var(--bg); padding: 12px 18px; border-radius: 10px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.25); max-width: calc(100% - 32px); }
+.proto-note { font-size: 12px; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.empty { text-align: center; padding: 34px 16px; color: var(--muted); }
+.empty b { display: block; color: var(--fg); font-size: 15px; margin-bottom: 4px; }
+
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
+.sending { animation: pulse 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .sending { animation: none; } .drawer { transition: none; } }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1000px) {
+  .grid-2 { grid-template-columns: minmax(0,1fr); }
+  .kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .year { grid-template-columns: repeat(6, minmax(0,1fr)); }
+  .modal-card { grid-template-columns: minmax(0,1fr); }
+  .modal-prev { border-left: 0; border-top: 1px solid var(--line); }
+}
+@media (max-width: 860px) {
+  .app, .app[data-nav="top"] { grid-template-columns: minmax(0,1fr); }
+  .sidebar { display: none; }
+  .topnav, .app[data-nav="top"] .topnav { display: none; }
+  .topbar .brand, .app[data-nav="top"] .topbar .brand { display: flex; }
+  .topbar .brand small { display: none; }
+  .search { display: none; }
+  .topbar .btn-new span { display: none; }
+  .topbar .btn-new { margin-left: auto; }
+  .tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+  .tabbar button { flex: 1; border: 0; background: none; display: grid; justify-items: center; gap: 2px; padding: 8px 2px; font-size: 11px; font-weight: 700; color: var(--muted); }
+  .tabbar button svg { width: 20px; height: 20px; }
+  .tabbar button[aria-current="page"] { color: var(--acc); }
+  .fab { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); height: 42px; padding: 0 14px; }
+  .fab span { display: none; }
+  .hero { grid-template-columns: minmax(0,1fr); }
+  .countdown { justify-self: start; display: flex; gap: 10px; align-items: baseline; }
+  .countdown b { font-size: 32px; }
+  .cal-d { min-height: 56px; padding: 4px; }
+  .cal-ev { font-size: 0; height: 6px; padding: 0; }
+  .agenda-item { grid-template-columns: 28px minmax(0,1fr); }
+  .agenda-item > :last-child { grid-column: 2; }
+  .f2 { grid-template-columns: minmax(0,1fr); }
+  .hide-sm { display: none; }
+}
+@media (max-width: 520px) {
+  .year { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .kpi b { font-size: 24px; }
+}
+</style>
+
+<div class="app" id="app" data-nav="side">
+  <aside class="sidebar" aria-label="Menu principal">
+    <div class="brand"><div class="brand-mark">C</div><div><b>Conselho</b><small>Companhia Exemplo S.A.</small></div></div>
+    <nav id="sideNav" class="stack" style="gap:2px"></nav>
+    <div class="side-foot"><div class="avatar">AC</div><div><b style="font-size:13px">Ana Costa</b><div class="muted" style="font-size:12px">Secretária de Governança</div></div></div>
+  </aside>
+  <div class="main-col">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">C</div><div><b>Conselho</b><small>Companhia Exemplo S.A.</small></div></div>
+      <nav class="topnav" id="topNav" aria-label="Menu principal"></nav>
+      <label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Buscar atas, deliberações, documentos" aria-label="Buscar"></label>
+      <button class="btn btn-primary btn-new" id="btnNew"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg><span>Nova reunião</span></button>
+    </header>
+    <main id="view"></main>
+  </div>
+  <nav class="tabbar" id="tabBar" aria-label="Menu principal"></nav>
+</div>
+
+<button class="fab" id="fab" aria-controls="drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Opções para decidir</span></button>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Opções de design" aria-hidden="true">
+  <div class="drawer-h"><div><h2>Opções para decidir</h2><div class="muted" style="font-size:12px">Troque e veja a mudança na hora</div></div><button class="btn btn-ghost btn-sm" id="closeDrawer" aria-label="Fechar">Fechar</button></div>
+  <div class="drawer-b" id="drawerBody"></div>
+</aside>
+<div id="modalRoot"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+const TODAY = new Date(2026, 10, 10, 9, 0);
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const D = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d, 12); };
+const MES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const MESF = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const SEM = ["dom","seg","ter","qua","qui","sex","sáb"];
+const fmt = s => { const d = D(s); return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`; };
+const fmtShort = s => { const d = D(s); return `${d.getDate()} ${MES[d.getMonth()]}`; };
+const daysTo = s => Math.round((D(s) - new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate(), 12)) / 864e5);
+const ini = n => n.split(" ").filter(w => w.length > 2 || w === n.split(" ")[0]).map(w => w[0]).slice(0,2).join("").toUpperCase();
+
+const I = {
+  home: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/>',
+  cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  task: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14.5c2.3.2 4 1.8 4.5 4.5"/>',
+  send: '<path d="M21 3 10 14"/><path d="M21 3 14 21l-4-7-7-4z"/>',
+  pin: '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/>',
+  check: '<path d="m5 12 5 5 9-10"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  wa: '<path d="M4 20l1.3-3.9A8 8 0 1 1 8 19z"/><path d="M9 9.5c.3 2 2.4 4.2 4.5 4.6l1-1.1 2 .9c-.3 1.2-1.3 1.8-2.3 1.6-3-.6-5.6-3.2-6.2-6.2-.2-1 .4-2 1.6-2.3l.9 2z"/>',
+  sms: '<path d="M4 5h16v11H9l-5 4z"/>',
+  file: '<path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/>',
+  alert: '<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17v.5"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  back: '<path d="M19 12H5M11 18l-6-6 6-6"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  upload: '<path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 16v4h16v-4"/>',
+  vote: '<path d="M4 13h16v7H4z"/><path d="m8 9 3 3 5-7"/>'
+};
+const ic = (n, s=16) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
+
+/* ---------- Example data (fictional) ---------- */
+const PEOPLE = [
+  { id:"hp", nome:"Helena Prado", cargo:"Presidente", tipo:"Externa", ini:"2025-04-28", fim:"2027-04-30", comites:["Pessoas"], canais:["mail","wa"] },
+  { id:"ra", nome:"Ricardo Amaral", cargo:"Vice-presidente", tipo:"Externo", ini:"2025-04-28", fim:"2027-04-30", comites:["Estratégia"], canais:["mail","wa"] },
+  { id:"ms", nome:"Marta Siqueira", cargo:"Conselheira", tipo:"Executiva", ini:"2025-04-28", fim:"2027-04-30", comites:["Estratégia"], canais:["mail"] },
+  { id:"pt", nome:"Paulo Teixeira", cargo:"Conselheiro", tipo:"Independente", ini:"2025-04-28", fim:"2027-04-30", comites:["Auditoria"], canais:["mail","wa","sms"] },
+  { id:"lf", nome:"Luísa Fontes", cargo:"Conselheira", tipo:"Independente", ini:"2026-08-12", fim:"2028-04-30", comites:["Auditoria","Pessoas"], canais:["mail","wa"] },
+  { id:"jm", nome:"Jorge Matos", cargo:"Conselheiro", tipo:"Externo", ini:"2024-04-25", fim:"2026-12-31", comites:[], canais:["mail","sms"] },
+  { id:"bl", nome:"Beatriz Lins", cargo:"Suplente", tipo:"Externa", ini:"2025-04-28", fim:"2027-04-30", comites:[], canais:["mail"] }
+];
+const P = id => PEOPLE.find(p => p.id === id) || { nome:id, id };
+const EXEC = { cm:"Carlos Mendes · CFO", fr:"Fernanda Rocha · Jurídico", dt:"Diego Torres · CTO", cp:"Compliance" };
+const who = id => P(id).nome !== id ? P(id).nome : (EXEC[id] || id);
+
+let MEETINGS = [
+  { id:"m11", org:"Conselho de Administração", tipo:"Ordinária", num:"11ª", data:"2026-11-18", hora:"14:00", fim:"17:30", formato:"Híbrida", local:"Sede · Sala do Conselho + Teams", fase:2,
+    rsvp:{ hp:"sim", ra:"sim", ms:"sim", pt:"sim", lf:"sim", jm:"pendente", bl:"nao" },
+    pauta:[
+      { t:"Acompanhamento de deliberações anteriores", tipo:"inf", rel:"ac", min:15, docs:0, auto:true },
+      { t:"Orçamento 2027 e plano de investimentos", tipo:"del", rel:"cm", min:60, docs:3 },
+      { t:"Relatório trimestral do Comitê de Auditoria", tipo:"inf", rel:"pt", min:30, docs:1 },
+      { t:"Revisão da Política de Transações com Partes Relacionadas", tipo:"del", rel:"fr", min:30, docs:2, conflito:"ra" },
+      { t:"Riscos cibernéticos: diagnóstico e plano de ação", tipo:"dis", rel:"dt", min:40, docs:2 },
+      { t:"Assuntos gerais", tipo:"inf", rel:"hp", min:15, docs:0 }
+    ],
+    docs:[
+      { n:"Orçamento 2027 – versão para deliberação", ext:"xls", tam:"2,1 MB", v:"v3", lidos:5, item:2 },
+      { n:"Plano de investimentos 2027–2029", ext:"ppt", tam:"8,4 MB", v:"v2", lidos:4, item:2 },
+      { n:"Parecer do Conselho Fiscal sobre orçamento", ext:"pdf", tam:"640 KB", v:"v1", lidos:2, item:2 },
+      { n:"Relatório trimestral do Comitê de Auditoria – 3T26", ext:"pdf", tam:"1,3 MB", v:"v1", lidos:6, item:3 },
+      { n:"Política de Partes Relacionadas – minuta com marcações", ext:"doc", tam:"310 KB", v:"v4", lidos:3, item:4 },
+      { n:"Parecer jurídico sobre a política", ext:"pdf", tam:"420 KB", v:"v1", lidos:1, item:4 }
+    ],
+    pendDocs:2, deliberacoes:[] },
+  { id:"ca11", org:"Comitê de Auditoria", tipo:"Ordinária", num:"6ª", data:"2026-11-25", hora:"09:00", fim:"11:00", formato:"Online", local:"Teams", fase:1,
+    rsvp:{ pt:"sim", lf:"sim" }, pauta:[], docs:[], deliberacoes:[] },
+  { id:"m12", org:"Conselho de Administração", tipo:"Ordinária", num:"12ª", data:"2026-12-09", hora:"14:00", fim:"17:00", formato:"Presencial", local:"Sede · Sala do Conselho", fase:0,
+    rsvp:{}, pauta:[], docs:[], deliberacoes:[] },
+  { id:"m10", org:"Conselho de Administração", tipo:"Ordinária", num:"10ª", data:"2026-10-21", hora:"14:00", fim:"17:10", formato:"Híbrida", local:"Sede · Sala do Conselho + Teams", fase:3,
+    rsvp:{ hp:"sim", ra:"sim", ms:"sim", pt:"sim", lf:"sim", jm:"sim", bl:"nao" },
+    pauta:[
+      { t:"Acompanhamento de deliberações anteriores", tipo:"inf", rel:"ac", min:15, docs:0, auto:true },
+      { t:"Proposta preliminar de orçamento 2027", tipo:"dis", rel:"cm", min:60, docs:2 },
+      { t:"Contratação de auditoria independente", tipo:"del", rel:"pt", min:30, docs:1 },
+      { t:"Plano de sucessão do CEO", tipo:"dis", rel:"hp", min:40, docs:1 }
+    ], docs:[
+      { n:"Orçamento 2027 – proposta preliminar", ext:"xls", tam:"1,8 MB", v:"v1", lidos:7, item:2 },
+      { n:"Termo de referência – auditoria independente", ext:"pdf", tam:"520 KB", v:"v2", lidos:7, item:3 }
+    ],
+    deliberacoes:[
+      { t:"Aprovada a abertura de concorrência para auditoria independente, com relatório de propostas até 30/10.", acoes:["a2"] },
+      { t:"Solicitada versão revisada do orçamento 2027, com cenário conservador de receita.", acoes:["a1"] },
+      { t:"Instituído grupo de trabalho para sucessão do CEO, coordenado pela Presidente.", acoes:["a4"] }
+    ] },
+  { id:"e3", org:"Conselho de Administração", tipo:"Extraordinária", num:"3ª", data:"2026-09-23", hora:"10:00", fim:"11:30", formato:"Online", local:"Teams", fase:5,
+    rsvp:{ hp:"sim", ra:"sim", ms:"sim", pt:"sim", lf:"sim", jm:"nao", bl:"sim" }, pauta:[], docs:[],
+    deliberacoes:[{ t:"Aprovada a captação de debêntures da 4ª emissão, até R$ 300 milhões.", acoes:["a5"] }] },
+  { id:"m9", org:"Conselho de Administração", tipo:"Ordinária", num:"9ª", data:"2026-08-26", hora:"14:00", fim:"17:00", formato:"Presencial", local:"Sede · Sala do Conselho", fase:5, rsvp:{}, pauta:[], docs:[], deliberacoes:[] }
+];
+const PLAN_YEAR = { 0:["ca"],1:["c"],2:["c","ca"],3:["c"],4:["c","ca"],5:["c"],6:["c"],7:["c","ca"],8:["c","e"],9:["c"],10:["c","ca"],11:["c"] };
+
+let ACTIONS = [
+  { id:"a1", t:"Apresentar versão revisada do orçamento 2027 com cenário conservador", resp:"cm", prazo:"2026-11-14", origem:"m10", feito:false },
+  { id:"a2", t:"Concluir concorrência e apresentar propostas de auditoria independente", resp:"pt", prazo:"2026-10-30", origem:"m10", feito:false },
+  { id:"a3", t:"Revisar Política de Transações com Partes Relacionadas", resp:"fr", prazo:"2026-12-05", origem:"m9", feito:false },
+  { id:"a4", t:"Apresentar lista curta de candidatos para sucessão do CEO", resp:"hp", prazo:"2027-01-15", origem:"m10", feito:false },
+  { id:"a5", t:"Registrar ata da RCA na Junta Comercial e publicar", resp:"fr", prazo:"2026-10-10", origem:"e3", feito:true },
+  { id:"a6", t:"Diagnóstico de riscos cibernéticos com plano de ação", resp:"dt", prazo:"2026-11-16", origem:"m9", feito:false },
+  { id:"a7", t:"Implantar canal de denúncias terceirizado", resp:"cp", prazo:"2026-09-30", origem:"m9", feito:true }
+];
+const ELEICOES = [
+  { data:"2026-08-12", ev:"AGE", desc:"Eleição de Luísa Fontes como conselheira independente, em substituição a Rogério Alves (renúncia).", pessoas:["lf"] },
+  { data:"2025-04-28", ev:"AGO", desc:"Eleição do Conselho para o mandato 2025–2027. Reeleição de 4 membros e eleição de 2 novos.", pessoas:["hp","ra","ms","pt","bl"] },
+  { data:"2025-05-06", ev:"RCA", desc:"Eleição da Presidente e do Vice-presidente do Conselho.", pessoas:["hp","ra"] },
+  { data:"2024-04-25", ev:"AGO", desc:"Eleição de Jorge Matos para mandato unificado até 31/12/2026.", pessoas:["jm"] }
+];
+let LOG = [
+  { quando:"2026-11-10 08:00", msg:"Lembrete: material da 11ª RCA disponível. Faltam 2 documentos.", canal:["mail"], para:"Secretaria", ent:1, lid:1 },
+  { quando:"2026-11-07 09:00", msg:"Prazo vencendo: orçamento 2027 revisado (14/11)", canal:["mail","wa"], para:"Carlos Mendes", ent:1, lid:1 },
+  { quando:"2026-11-04 10:12", msg:"Material disponível · 11ª RCA Ordinária", canal:["mail","wa"], para:"7 conselheiros", ent:7, lid:6 },
+  { quando:"2026-11-03 16:40", msg:"Convocação · 11ª RCA Ordinária · 18/11 14h", canal:["mail","wa","sms"], para:"7 conselheiros", ent:7, lid:7 },
+  { quando:"2026-10-31 08:00", msg:"Ação atrasada: propostas de auditoria independente", canal:["mail","wa"], para:"Paulo Teixeira", ent:1, lid:1 },
+  { quando:"2026-10-28 11:05", msg:"Ata da 10ª RCA disponível para revisão (prazo 11/11)", canal:["mail"], para:"7 conselheiros", ent:7, lid:5 }
+];
+
+const status = a => a.feito ? "done" : daysTo(a.prazo) < 0 ? "bad" : daysTo(a.prazo) <= 7 ? "warn" : "ok";
+const ST = { bad:"Atrasada", warn:"Vencendo", ok:"Em dia", done:"Concluída" };
+const prazoTxt = a => { if (a.feito) return "Concluída"; const d = daysTo(a.prazo); return d < 0 ? `${-d} dias de atraso` : d === 0 ? "vence hoje" : d === 1 ? "vence amanhã" : d <= 7 ? `vence em ${d} dias` : fmtShort(a.prazo); };
+const PHASES = ["Planejada","Convocada","Material enviado","Realizada","Ata aprovada","Ata assinada"];
+const phaseChip = m => { const f = m.fase; const cls = f>=5 ? "s-done" : f===4 ? "s-ok" : f===3 ? "s-warn" : f>=1 ? "s-acc" : "s-done";
+  const txt = f===3 ? "Ata em revisão" : PHASES[f]; return `<span class="chip ${cls}">${txt}</span>`; };
+const mName = m => `${m.num} ${m.org === "Conselho de Administração" ? "RCA" : m.org} ${m.tipo}`;
+
+/* ---------- Options ---------- */
+const OPTS = [
+  { k:"nav", t:"Menu de navegação", d:"Onde ficam os atalhos para as áreas do sistema.", c:[["side","Barra lateral","Sempre visível à esquerda. Melhor para quem usa todo dia (secretaria).",true],["top","Barra superior","Libera largura para o conteúdo. Melhor para leitura de documentos."]] },
+  { k:"home", t:"Tela inicial", d:"O que a pessoa vê ao entrar.", c:[["next","Foco na próxima reunião","Contagem regressiva, presença, material e o que falta preparar.",true],["pend","Painel de pendências","Números de ações atrasadas e a vencer, com listas."],["cal","Calendário do mês","Reuniões e prazos no mês, estilo agenda."]] },
+  { k:"acts", t:"Deliberações e ações", d:"Como acompanhar a execução do que o conselho decidiu.", c:[["kanban","Quadro por status","Colunas: atrasada, vencendo, em dia, concluída.",true],["list","Lista / tabela","Compacta, boa para exportar e filtrar."],["tl","Linha do tempo","Ações agrupadas por mês do prazo."]] },
+  { k:"meet", t:"Página da reunião", d:"Como organizar pauta, documentos, presença e ata.", c:[["tabs","Abas","Uma parte por vez. Mais limpo no celular.",true],["single","Página única","Tudo em sequência, com índice. Bom para imprimir e ler de uma vez."]] },
+  { k:"pal", t:"Cor institucional", d:"Cor de destaque. Ajustamos depois para a marca da empresa.", sw:true, c:[["petroleo","Petróleo","",true],["marinho","Azul-marinho",""],["grafite","Grafite e ouro",""]] },
+  { k:"dens", t:"Densidade", d:"Espaço entre os elementos.", c:[["comfortable","Confortável","Mais respiro. Melhor para conselheiros e tablet.",true],["compact","Compacta","Mais informação por tela. Melhor para a secretaria."]] },
+  { k:"theme", t:"Tema", d:"Claro, escuro ou seguir o aparelho.", c:[["system","Seguir o aparelho","",true],["light","Claro",""],["dark","Escuro",""]] },
+  { k:"chan", t:"Canais de mensagem na fase 1", d:"Por onde a convocação e os lembretes saem.", c:[["mail","Só e-mail","Decidido: começar só com e-mail. WhatsApp e SMS ficam para depois.",true],["mailwa","E-mail + WhatsApp","Exige conta WhatsApp Business verificada. Custo por conversa."],["all","E-mail + WhatsApp + SMS","SMS como reserva para quem não usa WhatsApp."]] },
+  { k:"rsvp", t:"Confirmação de presença", d:"Como o conselheiro responde à convocação.", c:[["link","Link direto, sem login","Um toque no e-mail ou WhatsApp. Login só para abrir documentos.",true],["login","Exige login","Mais controle, mais atrito."]] }
+];
+const DEF = Object.fromEntries(OPTS.map(o => [o.k, (o.c.find(c => c[3]) || o.c[0])[0]]));
+let S = Object.assign({}, DEF);
+try { const saved = JSON.parse(localStorage.getItem("conselho-opts") || "null"); if (saved) S = Object.assign(S, saved); } catch(e) {}
+const saveOpts = () => { try { localStorage.setItem("conselho-opts", JSON.stringify(S)); } catch(e) {} };
+
+let UI = { meetingId:"m11", tab:"pauta", filter:"all", uploads:[], newDocs:0, upItem:2 };
+
+function applyOpts(){
+  const root = document.documentElement;
+  root.dataset.palette = S.pal; root.dataset.density = S.dens;
+  if (S.theme === "system") delete root.dataset.theme; else root.dataset.theme = S.theme;
+  $("#app").dataset.nav = S.nav;
+}
+
+/* ---------- Navigation ---------- */
+const VIEWS = [["inicio","Início","home"],["agenda","Agenda","cal"],["acoes","Deliberações","task"],["conselheiros","Conselheiros","users"],["mensagens","Mensagens","send"]];
+function currentView(){ const h = location.hash.replace("#",""); return VIEWS.some(v => v[0] === h) || h === "reuniao" ? h : "inicio"; }
+function renderNav(){
+  const cur = currentView() === "reuniao" ? "agenda" : currentView();
+  const late = ACTIONS.filter(a => status(a) === "bad").length;
+  const link = ([id,label,icon]) => `<a class="nav-link" href="#${id}" ${cur===id?'aria-current="page"':""}>${ic(icon,18)}<span>${label}</span>${id==="acoes"&&late?`<span class="nav-count">${late}</span>`:""}</a>`;
+  $("#sideNav").innerHTML = VIEWS.map(link).join("");
+  $("#topNav").innerHTML = VIEWS.map(link).join("");
+  $("#tabBar").innerHTML = VIEWS.map(([id,label,icon]) => `<button data-go="${id}" ${cur===id?'aria-current="page"':""}>${ic(icon,20)}<span>${label}</span></button>`).join("");
+}
+
+/* ---------- Views ---------- */
+function nextMeeting(){ return MEETINGS.filter(m => daysTo(m.data) >= 0).sort((a,b) => D(a.data)-D(b.data))[0]; }
+function quorum(m){ const vals = Object.entries(m.rsvp).filter(([id]) => P(id).cargo !== "Suplente"); const sim = vals.filter(([,v]) => v==="sim").length; return { sim, total: PEOPLE.filter(p => p.cargo !== "Suplente").length, min: 4 }; }
+
+function actionRow(a){
+  const s = status(a); const o = MEETINGS.find(m => m.id === a.origem);
+  return `<div class="list-item"><div class="avatar" title="${esc(who(a.resp))}">${ini(who(a.resp))}</div>
+    <div class="li-main"><div class="li-title">${esc(a.t)}</div><div class="li-sub">${esc(who(a.resp))} · origem ${o ? esc(mName(o)) : ""}</div></div>
+    <span class="chip s-${s}">${prazoTxt(a)}</span></div>`;
+}
+function meetingRow(m){
+  const d = D(m.data);
+  return `<div class="list-item click" data-meeting="${m.id}"><div class="date-block"><b>${d.getDate()}</b><span>${MES[d.getMonth()]}</span></div>
+  <div class="li-main"><div class="li-title">${esc(mName(m))}</div><div class="li-sub">${SEM[d.getDay()]}, ${m.hora} · ${esc(m.formato)} · ${esc(m.local)}</div></div>${phaseChip(m)}</div>`;
+}
+function mandateAlerts(){
+  return PEOPLE.filter(p => daysTo(p.fim) <= 180).map(p => `<div class="list-item"><div class="avatar">${ini(p.nome)}</div><div class="li-main"><div class="li-title">${esc(p.nome)}</div><div class="li-sub">Mandato termina em ${fmt(p.fim)}</div></div><span class="chip s-warn">${daysTo(p.fim)} dias</span></div>`).join("");
+}
+
+function viewHome(){
+  const m = nextMeeting(); const q = quorum(m); const d = D(m.data); const dd = daysTo(m.data);
+  const open = ACTIONS.filter(a => !a.feito).sort((a,b) => D(a.prazo)-D(b.prazo));
+  const head = `<div class="page-head"><div><div class="eyebrow">Terça-feira, 10 de novembro de 2026</div><h1>Bom dia, Ana</h1></div><span class="proto-note">${ic("alert",14)} Protótipo com dados fictícios</span></div>`;
+  if (S.home === "next") {
+    const matDue = new Date(d); matDue.setDate(matDue.getDate()-7);
+    return head + `<div class="grid-2"><div class="stack">
+      <section class="card hero">
+        <div><div class="eyebrow">Próxima reunião</div><h2>${esc(m.num)} Reunião ${esc(m.tipo)} do ${esc(m.org)}</h2>
+          <div class="meta"><span>${ic("cal",15)} ${SEM[d.getDay()]}, ${fmt(m.data)}</span><span>${ic("clock",15)} ${m.hora}–${m.fim}</span><span>${ic(m.formato==="Online"?"video":"pin",15)} ${esc(m.local)}</span></div>
+          <div class="quorum"><div class="row" style="justify-content:space-between"><b>Presença confirmada</b><span class="tnum"><b>${q.sim}</b> de ${q.total} titulares · quórum mínimo ${q.min} <span class="chip s-ok plain" style="margin-left:4px">${ic("check",12)} garantido</span></span></div><div class="bar"><i style="width:${q.sim/q.total*100}%"></i></div></div>
+          <div class="checklist">
+            <div class="check ok"><span class="dot">${ic("check",12)}</span><div><b>Convocação enviada</b> <span class="muted">· 03/11 por e-mail, WhatsApp e SMS · 7 de 7 entregues</span></div></div>
+            <div class="check ok"><span class="dot">${ic("check",12)}</span><div><b>Pauta aprovada pela Presidente</b> <span class="muted">· 6 itens, 3h10 previstas</span></div></div>
+            <div class="check pending"><span class="dot"></span><div><b>Material: ${m.docs.length} de ${m.docs.length + m.pendDocs} documentos</b> <span class="muted">· prazo de envio ${fmt(`${matDue.getFullYear()}-${String(matDue.getMonth()+1).padStart(2,"0")}-${String(matDue.getDate()).padStart(2,"0")}`)} (7 dias antes)</span> <span class="chip s-warn">amanhã</span></div></div>
+            <div class="check pending"><span class="dot"></span><div><b>1 conselheiro sem resposta</b> <span class="muted">· Jorge Matos</span> <button class="btn btn-sm btn-ghost" data-toast="Lembrete enviado para Jorge Matos por e-mail e SMS.">Lembrar agora</button></div></div>
+          </div>
+          <div class="row" style="margin-top:20px"><button class="btn btn-primary" data-meeting="${m.id}">Abrir reunião ${ic("arrow",16)}</button><button class="btn" data-meeting="${m.id}" data-tab="docs">${ic("file",16)} Ver material</button></div>
+        </div>
+        <div class="countdown"><b>${dd}</b><span>dias</span></div>
+      </section>
+      <section class="card"><div class="pad section-title" style="margin:0;padding-bottom:0"><h2>Depois desta</h2><a class="btn btn-sm btn-ghost" href="#agenda">Agenda completa</a></div><div class="list">${MEETINGS.filter(x => daysTo(x.data) >= 0 && x.id !== m.id).map(meetingRow).join("")}</div></section>
+    </div><div class="stack">
+      <section class="card"><div class="pad section-title" style="margin:0;padding-bottom:0"><h2>Ações que precisam de atenção</h2><a class="btn btn-sm btn-ghost" href="#acoes">Ver todas</a></div><div class="list">${open.filter(a => status(a) !== "ok").map(actionRow).join("")}</div></section>
+      <section class="card"><div class="pad section-title" style="margin:0;padding-bottom:0"><h2>Mandatos vencendo</h2></div><div class="list">${mandateAlerts()}</div></section>
+    </div></div>`;
+  }
+  if (S.home === "pend") {
+    const c = k => ACTIONS.filter(a => status(a) === k).length;
+    return head + `<div class="kpis">
+      <div class="card kpi" style="--k:var(--bad)"><div class="eyebrow">Atrasadas</div><b>${c("bad")}</b></div>
+      <div class="card kpi" style="--k:var(--warn)"><div class="eyebrow">Vencem em 7 dias</div><b>${c("warn")}</b></div>
+      <div class="card kpi" style="--k:var(--ok)"><div class="eyebrow">Em dia</div><b>${c("ok")}</b></div>
+      <div class="card kpi"><div class="eyebrow">Concluídas em 2026</div><b>${12 + c("done")}</b></div></div>
+      <div class="grid-2"><section class="card"><div class="pad section-title" style="margin:0;padding-bottom:0"><h2>Ações em aberto</h2><a class="btn btn-sm btn-ghost" href="#acoes">Ver todas</a></div><div class="list">${open.map(actionRow).join("")}</div></section>
+      <div class="stack"><section class="card"><div class="pad section-title" style="margin:0;padding-bottom:0"><h2>Próximas reuniões</h2></div><div class="list">${MEETINGS.filter(x => daysTo(x.data) >= 0).map(meetingRow).join("")}</div></section>
+      <section class="card"><div class="pad section-title" style="margin:0;padding-bottom:0"><h2>Mandatos vencendo</h2></div><div class="list">${mandateAlerts()}</div></section></div></div>`;
+  }
+  return head + `<div class="grid-2"><section class="card"><div class="pad row" style="justify-content:space-between"><h2 class="serif" style="font-size:20px">Novembro de 2026</h2><div class="row" style="gap:12px"><span class="chip s-acc">Reunião</span><span class="chip s-warn">Prazo de ação</span></div></div>${monthGrid(2026,10)}</section>
+    <div class="stack"><section class="card"><div class="pad section-title" style="margin:0;padding-bottom:0"><h2>Próximas reuniões</h2></div><div class="list">${MEETINGS.filter(x => daysTo(x.data) >= 0).map(meetingRow).join("")}</div></section>
+    <section class="card"><div class="pad section-title" style="margin:0;padding-bottom:0"><h2>Ações que precisam de atenção</h2></div><div class="list">${open.filter(a => status(a) !== "ok").map(actionRow).join("")}</div></section></div></div>`;
+}
+function monthGrid(y, mo){
+  const first = new Date(y, mo, 1); const start = new Date(first); start.setDate(1 - first.getDay());
+  let h = SEM.map(s => `<div class="cal-h">${s}</div>`).join("");
+  for (let i = 0; i < 35; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    const evs = MEETINGS.filter(m => m.data === key).map(m => `<button class="cal-ev soft-acc" data-meeting="${m.id}" title="${esc(mName(m))}">${m.hora} ${m.org==="Conselho de Administração"?"RCA":"Com. Auditoria"}</button>`).join("")
+      + ACTIONS.filter(a => a.prazo === key && !a.feito).map(a => `<span class="cal-ev due" title="${esc(a.t)}">Prazo: ${esc(a.t)}</span>`).join("");
+    const isToday = d.toDateString() === TODAY.toDateString();
+    h += `<div class="cal-d ${d.getMonth()!==mo?"out":""} ${isToday?"today":""}"><span class="n">${d.getDate()}</span>${evs}</div>`;
+  }
+  return `<div class="cal">${h}</div>`;
+}
+
+function viewAgenda(){
+  const months = MESF.map((n,i) => { const plan = PLAN_YEAR[i] || []; const past = i < TODAY.getMonth();
+    return `<div class="month ${i===TODAY.getMonth()?"now":""}"><small>${n.slice(0,3)}</small><div class="pips">${plan.map(p => `<span class="pip ${p==="ca"?"com":""} ${past?"past":""}" title="${p==="ca"?"Comitê de Auditoria":p==="e"?"Extraordinária":"RCA Ordinária"}"></span>`).join("")}</div></div>`; }).join("");
+  const up = MEETINGS.filter(m => daysTo(m.data) >= 0).sort((a,b)=>D(a.data)-D(b.data));
+  const past = MEETINGS.filter(m => daysTo(m.data) < 0).sort((a,b)=>D(b.data)-D(a.data));
+  return `<div class="page-head"><div><div class="eyebrow">Agenda</div><h1>Reuniões do Conselho e comitês</h1></div><button class="btn" data-toast="No sistema real: importa o calendário anual aprovado e cria as reuniões ordinárias do ano.">${ic("cal",16)} Calendário anual 2027</button></div>
+  <section class="card pad" style="margin-bottom:var(--gap)"><div class="section-title"><h2>Calendário anual 2026</h2><div class="row" style="gap:14px;font-size:12px" ><span class="row" style="gap:6px"><span class="pip"></span>RCA</span><span class="row" style="gap:6px"><span class="pip com"></span>Comitê</span></div></div><div class="year">${months}</div></section>
+  <div class="grid-2"><section class="card"><div class="pad section-title" style="margin:0;padding-bottom:0"><h2>Próximas</h2></div><div class="list">${up.map(meetingRow).join("")}</div></section>
+  <section class="card"><div class="pad section-title" style="margin:0;padding-bottom:0"><h2>Realizadas</h2></div><div class="list">${past.map(meetingRow).join("")}</div></section></div>`;
+}
+
+function viewMeeting(){
+  const m = MEETINGS.find(x => x.id === UI.meetingId) || MEETINGS[0]; const d = D(m.data); const q = quorum(m);
+  const steps = PHASES.map((p,i) => `<span class="step ${i<m.fase?"done":i===m.fase?"cur":""}"><i>${i<m.fase?ic("check",11):i+1}</i>${p}</span>`).join("");
+  const T = { del:["Deliberação","t-del"], inf:["Informativo","t-inf"], dis:["Discussão","t-dis"] };
+  const pend = ACTIONS.filter(a => !a.feito && a.origem !== m.id && D(a.prazo) <= D(m.data) || (!a.feito && status(a)==="bad"));
+  const pauta = m.pauta.length ? m.pauta.map((it,i) => `<div class="agenda-item ${it.auto?"auto":""}"><span class="agenda-num">${i+1}</span>
+    <div style="min-width:0"><div class="row" style="gap:8px"><b>${esc(it.t)}</b><span class="tag ${T[it.tipo][1]}">${T[it.tipo][0]}</span>${it.auto?`<span class="tag soft-acc">Gerado automaticamente</span>`:""}</div>
+    <div class="li-sub">Relator: ${esc(it.rel==="ac"?"Ana Costa · Secretaria":who(it.rel))} · ${it.min} min${it.docs?` · ${it.docs} documento${it.docs>1?"s":""}`:""}</div>
+    ${it.conflito?`<div class="row" style="gap:6px;margin-top:6px"><span class="chip s-warn">${ic("alert",12)} Conflito de interesse declarado</span><span class="li-sub">${esc(P(it.conflito).nome)} não participa da deliberação</span></div>`:""}
+    ${it.auto?`<div class="auto-list">${pend.map(a => `<div class="auto-row"><span class="chip s-${status(a)}">${ST[status(a)]}</span><span>${esc(a.t)}</span><span class="muted">· ${esc(who(a.resp))}</span></div>`).join("")}</div>`:""}
+    </div><span class="muted tnum hide-sm">${it.min}′</span></div>`).join("")
+    : `<div class="empty"><b>Pauta ainda não montada</b>Os itens recorrentes e as pendências entram sozinhos quando a pauta for aberta.<div style="margin-top:12px"><button class="btn btn-primary" data-toast="No sistema real: abre o editor de pauta.">${ic("plus",16)} Montar pauta</button></div></div>`;
+  const EXTL = { pdf:"PDF", doc:"DOC", xls:"XLS", ppt:"PPT", img:"IMG" };
+  const itemOpts = m.pauta.length ? m.pauta.map((it,i) => [i+1, it.t]).filter(([,t]) => !/^Acompanhamento/.test(t)) : [[0,"Geral da reunião"]];
+  if (!itemOpts.some(([n]) => String(n) === String(UI.upItem))) UI.upItem = itemOpts[0][0];
+  const upZone = `<div class="pad" style="border-bottom:1px solid var(--line)"><div class="drop" id="drop">
+      <div class="drop-ic">${ic("upload",22)}</div>
+      <div><b>Arraste os arquivos para cá</b> ou <label for="fileIn" class="link">escolha no computador</label></div>
+      <div class="li-sub">PDF, Word, Excel, PowerPoint ou imagem · até 50 MB por arquivo · vários de uma vez</div>
+      <input type="file" id="fileIn" class="sr" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.png,.jpg,.jpeg">
+    </div>
+    <div class="row" style="margin-top:12px;gap:10px;flex-wrap:nowrap"><label for="upItem" class="muted" style="font-size:12px;font-weight:700;white-space:nowrap">Anexar ao item</label><select class="input" id="upItem" style="flex:1">${itemOpts.map(([n,t]) => `<option value="${n}" ${String(n)===String(UI.upItem)?"selected":""}>${n?n+". ":""}${esc(t)}</option>`).join("")}</select></div>
+    ${UI.uploads.length ? `<div class="stack" style="gap:10px;margin-top:14px">${UI.uploads.map(u => `<div class="row" style="gap:10px;flex-wrap:nowrap"><span class="file-ic ${u.ext}">${EXTL[u.ext]}</span><div style="flex:1;min-width:0"><div class="row" style="justify-content:space-between;gap:8px;flex-wrap:nowrap"><b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.n)}</b><span class="li-sub tnum">${u.pct}%</span></div><div class="bar" style="margin-top:4px"><i style="width:${u.pct}%"></i></div></div></div>`).join("")}</div>` : ""}
+  </div>
+  ${UI.newDocs ? `<div class="pad row notify" style="justify-content:space-between;border-bottom:1px solid var(--line)"><span><b>${UI.newDocs} arquivo${UI.newDocs>1?"s":""} novo${UI.newDocs>1?"s":""}</b> <span class="muted">ainda não avisado${UI.newDocs>1?"s":""} aos conselheiros</span></span><button class="btn btn-primary btn-sm" data-notify="${m.id}">${ic("mail",14)} Avisar conselheiros</button></div>` : ""}`;
+  const docs = upZone + `<div class="list">` + m.docs.map((f,idx) => `<div class="list-item"><span class="file-ic ${f.ext}">${EXTL[f.ext]}</span><div class="li-main"><div class="li-title">${esc(f.n)}${f.novo?` <span class="chip s-acc plain">novo</span>`:""}</div><div class="li-sub">${f.item?`Item ${f.item} da pauta`:"Geral"} · ${f.v} · ${f.tam}${f.por?` · enviado por ${esc(f.por)}`:""}</div></div>
+    <div class="hide-sm" style="width:120px"><div class="li-sub tnum">Lido por ${f.lidos} de 7</div><div class="bar ${f.lidos<4?"warn":""}"><i style="width:${f.lidos/7*100}%"></i></div></div><button class="btn btn-sm btn-ghost" data-newver="${idx}">Nova versão</button></div>`).join("")
+    + (m.pendDocs ? `<div class="list-item"><span class="file-ic" style="background:var(--surface-2);color:var(--muted)">…</span><div class="li-main"><div class="li-title muted">${m.pendDocs} documentos aguardando envio</div><div class="li-sub">Riscos cibernéticos (item 5) · relator Diego Torres</div></div><button class="btn btn-sm" data-toast="Diego Torres recebe um e-mail com um link de envio que só aceita arquivos do item 5. Ele não vê o resto do material.">Pedir ao relator</button></div>` : "")
+    + (!m.docs.length && !m.pendDocs ? `<div class="empty"><b>Nenhum documento ainda</b>Use a área acima para anexar o material de cada item da pauta.</div>` : "") + `</div>`;
+  const rs = { sim:["Confirmado","s-ok"], nao:["Ausência justificada","s-done"], pendente:["Sem resposta","s-warn"], env:["Aguardando","s-acc"] };
+  const pres = PEOPLE.map(p => { const r = m.rsvp[p.id] || (m.fase ? "pendente" : null); return `<div class="list-item"><div class="avatar">${ini(p.nome)}</div><div class="li-main"><div class="li-title">${esc(p.nome)}</div><div class="li-sub">${esc(p.cargo)} · ${esc(p.tipo)}</div></div>
+    <div class="channels hide-sm">${["mail","wa","sms"].map(c => `<span class="ch ${p.canais.includes(c)?"on":""}" title="${c}">${ic(c,14)}</span>`).join("")}</div>${r?`<span class="chip ${rs[r][1]} ${r==="env"?"sending":""}">${rs[r][0]}</span>`:`<span class="chip s-done">Não convocado</span>`}</div>`; }).join("");
+  const ataPhase = m.fase >= 5 ? 3 : m.fase === 4 ? 2 : m.fase === 3 ? 1 : 0;
+  const ata = m.fase >= 3 ? `<div class="pad"><div class="steps">${["Rascunho","Revisão dos conselheiros","Aprovada","Assinada"].map((p,i)=>`<span class="step ${i<ataPhase?"done":i===ataPhase?"cur":""}"><i>${i<ataPhase?ic("check",11):i+1}</i>${p}</span>`).join("")}</div>
+    ${ataPhase===1?`<div class="row" style="margin-top:14px;gap:10px"><span class="chip s-warn">Revisão até 11/11</span><span class="li-sub">5 de 7 revisaram · 2 comentários pendentes</span></div>`:""}</div>
+    <div class="pad" style="border-top:1px solid var(--line)"><div class="minutes"><p><b>ATA DA ${esc(m.num.toUpperCase())} REUNIÃO ${esc(m.tipo.toUpperCase())} DO CONSELHO DE ADMINISTRAÇÃO</b></p>
+    <p>Aos ${d.getDate()} dias do mês de ${MESF[d.getMonth()].toLowerCase()} de ${d.getFullYear()}, às ${m.hora.replace(":", "h")}, reuniu-se o Conselho de Administração da Companhia Exemplo S.A., em formato ${m.formato.toLowerCase()}, com a presença de ${Object.values(m.rsvp).filter(v=>v==="sim").length} conselheiros, verificado o quórum de instalação.</p>
+    ${m.deliberacoes.map((x,i)=>`<p><b>${i+1}.</b> ${esc(x.t)}${i===0&&ataPhase===1?` <span class="hl">[comentário de Paulo Teixeira: incluir o prazo de contratação]</span>`:""}</p>`).join("")}</div></div>`
+    : `<div class="empty"><b>A ata começa a ser escrita durante a reunião</b>O modelo já vem preenchido com data, presentes e quórum. Deliberações registradas viram ações com responsável e prazo.</div>`;
+  const ataSigned = m.fase >= 5 ? `<div class="pad" style="border-top:1px solid var(--line)"><div class="row" style="gap:12px;flex-wrap:nowrap"><span class="file-ic pdf">PDF</span><div class="li-main"><div class="li-title">Ata assinada (digitalizada)</div><div class="li-sub">Assinada à mão pelos presentes · enviada por Ana Costa · 3 páginas</div></div><span class="chip s-ok">Arquivo oficial</span></div></div>`
+    : m.fase >= 3 ? `<div class="pad" style="border-top:1px solid var(--line)"><div class="row" style="justify-content:space-between"><div class="li-main"><b>Ata assinada à mão</b><div class="li-sub">Depois de aprovada: imprimir, colher as assinaturas, digitalizar e enviar o PDF aqui. Ele passa a ser o arquivo oficial da reunião.</div></div><button class="btn btn-sm" data-signed="${m.id}">${ic("upload",14)} Enviar ata assinada</button></div></div>` : "";
+  const dels = m.deliberacoes.length ? m.deliberacoes.map((x,i) => `<div class="pad" style="border-top:${i?"1px solid var(--line)":"0"}"><div class="row" style="gap:8px;align-items:flex-start;flex-wrap:nowrap"><span class="agenda-num">${i+1}</span><div style="min-width:0;flex:1"><b>${esc(x.t)}</b>
+    <div class="stack" style="gap:6px;margin-top:10px">${x.acoes.map(id => { const a = ACTIONS.find(y=>y.id===id); return `<div class="row" style="gap:8px"><span class="muted">${ic("arrow",14)}</span><span>${esc(a.t)}</span><span class="muted">· ${esc(who(a.resp))} · prazo ${fmt(a.prazo)}</span><span class="chip s-${status(a)}">${ST[status(a)]}</span></div>`; }).join("")}</div></div></div></div>`).join("")
+    : `<div class="empty"><b>Nenhuma deliberação registrada</b>Durante a reunião, cada decisão é registrada aqui. O sistema pede responsável e prazo e avisa o responsável na hora.<div style="margin-top:12px"><button class="btn" data-toast="No sistema real: abre o registro rápido de deliberação.">${ic("plus",16)} Registrar deliberação</button></div></div>`;
+
+  const SECS = [["pauta","Pauta",m.pauta.length,pauta],["docs","Documentos",m.docs.length,docs],["presenca","Presença",`${q.sim}/${q.total}`,`<div class="list">${pres}</div>`],["ata","Ata",null,ata + ataSigned],["delib","Deliberações",m.deliberacoes.length,dels]];
+  const header = `<button class="btn btn-ghost btn-sm" data-go="agenda" style="margin:-6px 0 12px -10px">${ic("back",16)} Agenda</button>
+    <div class="page-head" style="margin-bottom:12px"><div><div class="eyebrow">${esc(m.org)}</div><h1>${esc(m.num)} Reunião ${esc(m.tipo)}</h1>
+    <div class="meta" style="margin-top:8px"><span>${ic("cal",15)} ${SEM[d.getDay()]}, ${fmt(m.data)}</span><span>${ic("clock",15)} ${m.hora}–${m.fim}</span><span>${ic(m.formato==="Online"?"video":"pin",15)} ${esc(m.local)}</span></div></div>
+    <div class="row" style="gap:8px">${m.fase>=1&&m.fase<3?`<button class="btn" data-toast="Lembrete enviado a todos os conselheiros pelos canais preferidos.">${ic("send",16)} Enviar lembrete</button><button class="btn btn-primary" data-toast="No sistema real: modo reunião, com cronômetro por item e registro de deliberações.">Iniciar reunião</button>`:m.fase===0?`<button class="btn btn-primary" data-toast="Convocação enviada a 7 conselheiros.">${ic("send",16)} Convocar</button>`:`<button class="btn" data-toast="No sistema real: baixa a ata em PDF com assinaturas.">${ic("file",16)} Baixar ata</button>`}</div></div>
+    <div class="steps">${steps}</div>`;
+  if (S.meet === "tabs") {
+    const cur = SECS.find(s => s[0] === UI.tab) || SECS[0];
+    return header + `<div class="tabs" role="tablist">${SECS.map(s => `<button class="tab" role="tab" data-tab-sel="${s[0]}" aria-selected="${s[0]===cur[0]}">${s[1]}${s[2]!==null&&s[2]!==0?` <span class="tag">${s[2]}</span>`:""}</button>`).join("")}</div><section class="card">${cur[3]}</section>`;
+  }
+  return header + `<div class="single-index">${SECS.map(s => `<a class="tag" href="#reuniao" data-jump="sec-${s[0]}">${s[1]}</a>`).join("")}</div>` + SECS.map(s => `<section class="single-sec" id="sec-${s[0]}"><div class="section-title"><h2>${s[1]}</h2></div><div class="card">${s[3]}</div></section>`).join("");
+}
+
+function viewActions(){
+  const f = UI.filter; const list = ACTIONS.filter(a => f === "all" || status(a) === f);
+  const c = k => ACTIONS.filter(a => status(a) === k).length;
+  const filters = [["all","Todas",ACTIONS.length],["bad","Atrasadas",c("bad")],["warn","Vencendo",c("warn")],["ok","Em dia",c("ok")],["done","Concluídas",c("done")]].map(([k,l,n]) => `<button class="filter" data-filter="${k}" aria-pressed="${f===k}">${l} <span class="tnum muted">${n}</span></button>`).join("");
+  const origin = a => { const o = MEETINGS.find(m => m.id === a.origem); return o ? mName(o) : ""; };
+  const btn = a => a.feito ? `<button class="btn btn-sm btn-ghost" data-undo="${a.id}">Reabrir</button>` : `<button class="btn btn-sm" data-done="${a.id}">${ic("check",14)} Concluir</button>`;
+  let body;
+  if (S.acts === "kanban") {
+    body = `<div class="kanban">${["bad","warn","ok","done"].map(k => { const items = list.filter(a => status(a) === k);
+      return `<div class="col"><div class="col-h"><span class="chip s-${k}">${ST[k]}</span><span class="muted tnum">${items.length}</span></div>${items.map(a => `<div class="card a-card" style="--s:var(--${k})"><div class="t">${esc(a.t)}</div><div class="li-sub">Origem: ${esc(origin(a))}</div><div class="a-foot"><div class="row" style="gap:8px"><div class="avatar" title="${esc(who(a.resp))}">${ini(who(a.resp))}</div><span class="li-sub">${prazoTxt(a)}</span></div>${btn(a)}</div></div>`).join("") || `<div class="li-sub" style="padding:10px 4px">Nada aqui</div>`}</div>`; }).join("")}</div>`;
+  } else if (S.acts === "list") {
+    body = `<section class="card tbl-wrap"><table><thead><tr><th>Ação</th><th>Responsável</th><th>Origem</th><th>Prazo</th><th>Status</th><th></th></tr></thead><tbody>${list.map(a => `<tr><td style="min-width:240px"><b>${esc(a.t)}</b></td><td style="white-space:nowrap">${esc(who(a.resp))}</td><td style="white-space:nowrap" class="muted">${esc(origin(a))}</td><td class="tnum" style="white-space:nowrap">${fmt(a.prazo)}</td><td><span class="chip s-${status(a)}">${ST[status(a)]}</span></td><td>${btn(a)}</td></tr>`).join("")}</tbody></table></section>`;
+  } else {
+    const groups = {}; list.slice().sort((a,b)=>D(a.prazo)-D(b.prazo)).forEach(a => { const d = D(a.prazo); const k = `${MESF[d.getMonth()]} ${d.getFullYear()}`; (groups[k] = groups[k] || []).push(a); });
+    body = `<div class="tl">${Object.entries(groups).map(([k,items]) => `<div class="tl-m"><h3>${k}</h3><div class="card list">${items.map(a => `<div class="list-item"><span class="chip s-${status(a)}">${ST[status(a)]}</span><div class="li-main"><div class="li-title">${esc(a.t)}</div><div class="li-sub">${esc(who(a.resp))} · prazo ${fmt(a.prazo)} · ${esc(origin(a))}</div></div>${btn(a)}</div>`).join("")}</div></div>`).join("")}</div>`;
+  }
+  return `<div class="page-head"><div><div class="eyebrow">Execução</div><h1>Deliberações e ações</h1></div><button class="btn" data-toast="No sistema real: exporta para Excel ou PDF para o relatório ao conselho.">${ic("file",16)} Exportar</button></div>
+    <div class="row" style="justify-content:space-between;margin-bottom:16px"><div class="filters">${filters}</div><span class="li-sub">Responsáveis recebem lembrete 7 dias antes e no dia do prazo</span></div>${body}`;
+}
+
+function viewPeople(){
+  const cards = PEOPLE.map(p => { const total = D(p.fim) - D(p.ini); const used = Math.min(1, Math.max(0, (TODAY - D(p.ini)) / total)); const left = daysTo(p.fim);
+    return `<div class="card person"><div class="person-top"><div class="avatar lg">${ini(p.nome)}</div><div style="min-width:0"><b style="font-size:15px">${esc(p.nome)}</b><div class="li-sub">${esc(p.cargo)} · ${esc(p.tipo)}</div></div></div>
+    <div><div class="row" style="justify-content:space-between;font-size:12px"><span class="muted">Mandato</span><span class="tnum">${fmt(p.ini)} – ${fmt(p.fim)}</span></div><div class="bar ${left<=180?"warn":""}" style="margin-top:6px"><i style="width:${used*100}%"></i></div>${left<=180?`<div class="li-sub" style="color:var(--warn);margin-top:4px;font-weight:600">Termina em ${left} dias</div>`:""}</div>
+    <div class="row" style="justify-content:space-between"><div class="row" style="gap:6px">${p.comites.length?p.comites.map(c=>`<span class="tag">${esc(c)}</span>`).join(""):`<span class="li-sub">Sem comitês</span>`}</div><div class="channels">${["mail","wa","sms"].map(c => `<span class="ch ${p.canais.includes(c)?"on":""}" title="${c==="mail"?"E-mail":c==="wa"?"WhatsApp":"SMS"}">${ic(c,14)}</span>`).join("")}</div></div></div>`; }).join("");
+  const el = ELEICOES.map(e => `<div class="list-item"><div class="date-block"><b>${D(e.data).getDate()}</b><span>${MES[D(e.data).getMonth()]} ${String(D(e.data).getFullYear()).slice(2)}</span></div><div class="li-main"><div class="row" style="gap:8px"><span class="tag soft-acc">${e.ev}</span><span class="li-sub">${fmt(e.data)}</span></div><div style="margin-top:4px">${esc(e.desc)}</div></div><div class="avatars hide-sm">${e.pessoas.map(id => `<div class="avatar" title="${esc(P(id).nome)}">${ini(P(id).nome)}</div>`).join("")}</div></div>`).join("");
+  return `<div class="page-head"><div><div class="eyebrow">Composição</div><h1>Conselheiros</h1></div><div class="row" style="gap:8px"><button class="btn" data-toast="No sistema real: registra eleição, vincula a ata da assembleia e atualiza os mandatos.">${ic("vote",16)} Registrar eleição</button><button class="btn btn-primary" data-toast="No sistema real: abre o cadastro de conselheiro.">${ic("plus",16)} Novo conselheiro</button></div></div>
+  <div class="grid-cards" style="margin-bottom:28px">${cards}</div>
+  <div class="section-title"><h2>Histórico de eleições</h2></div><section class="card list">${el}</section>`;
+}
+
+function viewLog(){
+  const rows = LOG.map(l => `<tr><td class="tnum" style="white-space:nowrap">${fmt(l.quando.slice(0,10))} ${l.quando.slice(11)}</td><td style="min-width:240px"><b>${esc(l.msg)}</b></td><td><div class="channels">${l.canal.map(c => `<span class="ch on">${ic(c,14)}</span>`).join("")}</div></td><td style="white-space:nowrap">${esc(l.para)}</td><td class="tnum" style="white-space:nowrap"><span class="${l.env?"sending":""}">${l.ent} entregue${l.ent>1?"s":""} · ${l.lid} lida${l.lid>1?"s":""}</span></td></tr>`).join("");
+  return `<div class="page-head"><div><div class="eyebrow">Comunicação</div><h1>Mensagens enviadas</h1></div><button class="btn" data-toast="No sistema real: edita os modelos de convocação, lembrete e cobrança.">Modelos de mensagem</button></div>
+  <section class="card pad" style="margin-bottom:var(--gap)"><div class="section-title"><h2>Envios automáticos ativos</h2></div><div class="row" style="gap:8px">${["Convocação ao criar reunião","Material disponível","Lembrete 1 dia antes","Lembrete 1 hora antes","Ata para revisão","Ação vence em 7 dias","Ação atrasada","Mandato vence em 90 dias"].map(t => `<span class="tag">${ic("check",13)}&nbsp;${t}</span>`).join("")}</div></section>
+  <section class="card tbl-wrap"><table><thead><tr><th>Quando</th><th>Mensagem</th><th>Canais</th><th>Para</th><th>Entrega</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+}
+
+/* ---------- Drawer ---------- */
+function renderDrawer(){
+  const PAL = { petroleo:["#0c5b67","#63c2cf"], marinho:["#1e3a8a","#91a9ff"], grafite:["#7a5a10","#dcb860"] };
+  const body = OPTS.map((o,i) => {
+    const ch = o.sw
+      ? `<div class="swatches" role="radiogroup" aria-label="${o.t}">${o.c.map(c => `<button class="sw" role="radio" aria-checked="${S[o.k]===c[0]}" data-opt="${o.k}" data-val="${c[0]}"><i style="background:linear-gradient(90deg,${PAL[c[0]][0]} 50%,${PAL[c[0]][1]} 50%)"></i>${c[1]}</button>`).join("")}</div>`
+      : `<div class="choices" role="radiogroup" aria-label="${o.t}">${o.c.map(c => `<button class="choice" role="radio" aria-checked="${S[o.k]===c[0]}" data-opt="${o.k}" data-val="${c[0]}"><span class="radio"></span><span><b>${c[1]}${c[3]?` <span class="rec">Sugerido</span>`:""}</b>${c[2]?`<small>${c[2]}</small>`:""}</span></button>`).join("")}</div>`;
+    return `<div class="opt"><h3><span class="num">${i+1}.</span>${o.t}</h3><p>${o.d}</p>${ch}</div>`;
+  }).join("");
+  $("#drawerBody").innerHTML = body + `<div class="summary"><b>Suas escolhas</b><ol id="sumList">${summaryLines().map(l => `<li>${esc(l)}</li>`).join("")}</ol>
+    <div class="row" style="gap:8px"><button class="btn btn-primary btn-sm" id="copySum">Copiar escolhas</button><button class="btn btn-sm btn-ghost" id="resetOpts">Voltar ao sugerido</button></div>
+    <div class="li-sub" style="margin-top:8px">Cole o texto copiado no chat para eu seguir com o MVP.</div></div>`;
+}
+function summaryLines(){ return OPTS.map(o => `${o.t}: ${o.c.find(c => c[0] === S[o.k])[1]}`); }
+function openDrawer(v){ $("#drawer").classList.toggle("open", v); $("#drawer").setAttribute("aria-hidden", String(!v)); $("#scrim").hidden = !v || innerWidth >= 1280; document.body.classList.toggle("docked", v); }
+
+/* ---------- New meeting modal ---------- */
+let NM = { org:"Conselho de Administração", tipo:"Extraordinária", data:"2026-11-26", hora:"10:00", formato:"Online", local:"Teams", pauta:"Aprovação de aditivo ao contrato de financiamento", ch:{ mail:true, wa:S.chan!=="mail", sms:S.chan==="all" }, prev:"mail" };
+function msgPreview(){
+  const d = D(NM.data); const when = `${SEM[d.getDay()]}, ${fmt(NM.data)}, às ${NM.hora}`;
+  const title = `Reunião ${NM.tipo} do ${NM.org}`;
+  const link = S.rsvp === "link";
+  if (NM.prev === "wa") return `<div class="wa"><div class="wa-b"><b>Convocação · ${esc(title)}</b>
+📅 ${esc(when)}
+📍 ${esc(NM.formato)} · ${esc(NM.local)}
+Pauta: ${esc(NM.pauta || "a definir")}
+
+O material estará disponível no portal até 7 dias antes.</div><div class="wa-btns"><span>Confirmo presença</span><span>Não poderei participar</span><span>Ver pauta</span></div></div>
+<div class="li-sub">Mensagem-modelo aprovada pela Meta. Os botões respondem direto no WhatsApp${link?"":" (exige login para confirmar)"}.</div>`;
+  if (NM.prev === "sms") return `<div class="sms"><div class="sms-b">CONSELHO: Convocação ${esc(NM.tipo)} em ${fmt(NM.data)} ${NM.hora}, ${esc(NM.formato)}. Confirme: cnsl.app/r/8K2Q</div></div><div class="li-sub">SMS curto (até 160 caracteres) com link de confirmação.</div>`;
+  return `<div class="msg-email"><div class="band"></div><div class="hd"><span><b>De:</b> Secretaria de Governança</span><span><b>Assunto:</b> Convocação · ${esc(title)} · ${fmt(NM.data)}</span><span>${ic("file",13)} convite.ics (adiciona ao Outlook / Google Agenda)</span></div>
+  <div class="bd"><div>Prezado(a) conselheiro(a),</div><div>Fica convocado(a) para a <b>${esc(title)}</b>, a realizar-se em <b>${esc(when)}</b>, no formato ${esc(NM.formato.toLowerCase())} (${esc(NM.local)}).</div><div><b>Ordem do dia:</b> ${esc(NM.pauta || "a definir")}</div>
+  <div class="ctas"><span class="btn btn-primary btn-sm">Confirmo presença</span><span class="btn btn-sm">Não poderei participar</span></div><div class="li-sub">${link?"Responder pelos botões não exige login.":"Os botões levam ao login no portal."}</div></div></div>`;
+}
+function renderModal(){
+  const seg = (k, vals) => `<div class="seg">${vals.map(v => `<button type="button" data-nm="${k}" data-v="${v}" aria-pressed="${NM[k]===v}">${v}</button>`).join("")}</div>`;
+  const count = PEOPLE.length;
+  const chans = [["mail","E-mail"],["wa","WhatsApp"],["sms","SMS"]];
+  $("#modalRoot").innerHTML = `<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="nmTitle"><form class="modal-card" id="nmForm">
+  <div class="modal-form"><div><div class="eyebrow">Nova reunião</div><h2 class="serif" id="nmTitle" style="font-size:22px;margin-top:4px">Agendar e convocar</h2></div>
+    <div class="field"><label for="nmOrg">Órgão</label><select class="input" id="nmOrg"><option>Conselho de Administração</option><option>Comitê de Auditoria</option><option>Comitê de Pessoas</option></select></div>
+    <div class="field"><span class="lbl">Tipo</span>${seg("tipo",["Ordinária","Extraordinária"])}</div>
+    <div class="f2"><div class="field"><label for="nmData">Data</label><input class="input" type="date" id="nmData" value="${NM.data}" required></div><div class="field"><label for="nmHora">Hora</label><input class="input" type="time" id="nmHora" value="${NM.hora}" required></div></div>
+    <div class="field"><span class="lbl">Formato</span>${seg("formato",["Presencial","Online","Híbrida"])}</div>
+    <div class="field"><label for="nmLocal">Local ou link</label><input class="input" id="nmLocal" value="${esc(NM.local)}"></div>
+    <div class="field"><label for="nmPauta">Ordem do dia</label><textarea class="input" id="nmPauta">${esc(NM.pauta)}</textarea></div>
+    <div class="field"><span class="lbl">Convocar por</span><div class="row" style="gap:16px">${chans.map(([k,l]) => `<label class="tog"><input type="checkbox" id="nmCh-${k}" data-ch="${k}" ${NM.ch[k]?"checked":""}> ${l}</label>`).join("")}</div></div>
+  </div>
+  <div class="modal-prev"><div class="row" style="justify-content:space-between"><b>Prévia da convocação</b><div class="seg" style="width:auto">${chans.map(([k,l]) => `<button type="button" data-prev="${k}" aria-pressed="${NM.prev===k}">${l}</button>`).join("")}</div></div>
+    <div id="prevBox">${msgPreview()}</div>
+    <div class="card pad" style="display:grid;gap:8px"><div class="row" style="justify-content:space-between"><b>Destinatários</b><span class="li-sub">${count} conselheiros + secretaria</span></div><div class="avatars">${PEOPLE.map(p => `<div class="avatar" title="${esc(p.nome)}">${ini(p.nome)}</div>`).join("")}</div><div class="li-sub">Cada um recebe pelos canais que escolheu no cadastro. Lembretes automáticos 1 dia e 1 hora antes.</div></div>
+    <div class="row" style="justify-content:flex-end;gap:8px"><button type="button" class="btn btn-ghost" id="nmCancel">Cancelar</button><button type="submit" class="btn btn-primary">${ic("send",16)} Criar e convocar todos</button></div>
+  </div></form></div>`;
+  $("#nmOrg").value = NM.org;
+}
+function readModal(){ NM.org = $("#nmOrg").value; NM.data = $("#nmData").value || NM.data; NM.hora = $("#nmHora").value || NM.hora; NM.local = $("#nmLocal").value; NM.pauta = $("#nmPauta").value; }
+function createMeeting(){
+  readModal();
+  const id = "n" + Date.now();
+  const chans = Object.keys(NM.ch).filter(k => NM.ch[k]);
+  const m = { id, org:NM.org, tipo:NM.tipo, num:"4ª", data:NM.data, hora:NM.hora, fim:"—", formato:NM.formato, local:NM.local || "a definir", fase:1,
+    rsvp:Object.fromEntries(PEOPLE.map(p => [p.id,"env"])), pauta:[{ t:"Acompanhamento de deliberações anteriores", tipo:"inf", rel:"ac", min:10, docs:0, auto:true },{ t:NM.pauta || "Ordem do dia a definir", tipo:"del", rel:"hp", min:45, docs:0 }], docs:[], deliberacoes:[] };
+  MEETINGS.push(m);
+  const entry = { quando:"2026-11-10 09:15", msg:`Convocação · ${m.num} ${m.org === "Conselho de Administração" ? "RCA" : m.org} ${m.tipo} · ${fmtShort(m.data)} ${m.hora}`, canal:chans, para:`${PEOPLE.length} conselheiros`, ent:0, lid:0, env:true };
+  LOG.unshift(entry);
+  $("#modalRoot").innerHTML = "";
+  UI.meetingId = id; UI.tab = "presenca";
+  location.hash = "reuniao"; render();
+  toast(`Reunião criada. Convocação saindo para ${PEOPLE.length} conselheiros por ${chans.map(c => ({mail:"e-mail",wa:"WhatsApp",sms:"SMS"}[c])).join(", ")}.`);
+  const seq = [["hp","sim"],["lf","sim"],["pt","sim"],["ra","sim"],["ms","pendente"],["jm","pendente"],["bl","pendente"]];
+  seq.forEach(([pid,v],i) => setTimeout(() => { m.rsvp[pid] = v; entry.ent = Math.min(PEOPLE.length, entry.ent + 1); entry.lid = Math.max(0, entry.ent - 2); if (i === seq.length-1) entry.env = false; if (["reuniao","mensagens"].includes(currentView())) render(); }, 900 + i*650));
+}
+
+/* ---------- Render & events ---------- */
+function render(){
+  applyOpts(); renderNav();
+  const v = currentView();
+  const html = v === "agenda" ? viewAgenda() : v === "reuniao" ? viewMeeting() : v === "acoes" ? viewActions() : v === "conselheiros" ? viewPeople() : v === "mensagens" ? viewLog() : viewHome();
+  $("#view").innerHTML = html;
+}
+let toastT;
+function toast(t){ const el = $("#toast"); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 3600); }
+
+document.addEventListener("click", e => {
+  if (e.target.closest("#drop") && !e.target.closest("label, input")) { $("#fileIn").click(); return; }
+  const t = e.target.closest("button, a, [data-meeting]"); if (!t) return;
+  if (t.dataset.notify) { const m = MEETINGS.find(x => x.id === t.dataset.notify); const n = UI.newDocs;
+    LOG.unshift({ quando:"2026-11-12 10:30", msg:`Material novo · ${mName(m)} · ${n} arquivo${n>1?"s":""}`, canal:["mail"], para:"7 conselheiros", ent:7, lid:0 });
+    m.docs.forEach(d => d.novo = false); UI.newDocs = 0; render(); toast(`Um único e-mail foi para os 7 conselheiros, listando os ${n} arquivo${n>1?"s":""} novo${n>1?"s":""}.`); return; }
+  if (t.dataset.newver) { const m = MEETINGS.find(x => x.id === UI.meetingId); const f = m.docs[+t.dataset.newver];
+    f.v = "v" + (parseInt(f.v.slice(1), 10) + 1); f.lidos = 0; if (!f.novo) { f.novo = true; UI.newDocs++; } render(); toast(`Versão ${f.v} publicada. A anterior fica guardada no histórico.`); return; }
+  if (t.dataset.signed) { const m = MEETINGS.find(x => x.id === t.dataset.signed); m.fase = 5; render(); toast("Ata assinada arquivada. A reunião passa para \"Ata assinada\"."); return; }
+  if (t.dataset.meeting) { e.preventDefault(); UI.meetingId = t.dataset.meeting; UI.tab = t.dataset.tab || "pauta"; if (location.hash === "#reuniao") render(); else location.hash = "reuniao"; scrollTo(0,0); return; }
+  if (t.dataset.go) { location.hash = t.dataset.go; return; }
+  if (t.dataset.toast) { toast(t.dataset.toast); return; }
+  if (t.dataset.tabSel) { UI.tab = t.dataset.tabSel; render(); return; }
+  if (t.dataset.jump) { e.preventDefault(); const s = document.getElementById(t.dataset.jump); if (s) s.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); return; }
+  if (t.dataset.filter) { UI.filter = t.dataset.filter; render(); return; }
+  if (t.dataset.done) { ACTIONS.find(a => a.id === t.dataset.done).feito = true; render(); toast("Ação concluída. O conselho verá isso no acompanhamento da próxima reunião."); return; }
+  if (t.dataset.undo) { ACTIONS.find(a => a.id === t.dataset.undo).feito = false; render(); return; }
+  if (t.dataset.opt) { S[t.dataset.opt] = t.dataset.val; saveOpts(); if (t.dataset.opt === "chan") NM.ch = { mail:true, wa:S.chan!=="mail", sms:S.chan==="all" }; const sc = $("#drawerBody").scrollTop; renderDrawer(); $("#drawerBody").scrollTop = sc; render(); return; }
+  if (t.dataset.nm) { readModal(); NM[t.dataset.nm] = t.dataset.v; if (t.dataset.nm === "formato") NM.local = t.dataset.v === "Presencial" ? "Sede · Sala do Conselho" : t.dataset.v === "Online" ? "Teams" : "Sede · Sala do Conselho + Teams"; renderModal(); return; }
+  if (t.dataset.prev) { readModal(); NM.prev = t.dataset.prev; renderModal(); return; }
+  if (t.id === "btnNew") { renderModal(); setTimeout(() => $("#nmData") && $("#nmData").focus(), 0); return; }
+  if (t.id === "nmCancel") { $("#modalRoot").innerHTML = ""; return; }
+  if (t.id === "fab") { openDrawer(!$("#drawer").classList.contains("open")); return; }
+  if (t.id === "closeDrawer") { openDrawer(false); return; }
+  if (t.id === "copySum") { const txt = "Minhas escolhas para o sistema do Conselho:\n" + summaryLines().map((l,i) => `${i+1}. ${l}`).join("\n");
+    const ok = () => toast("Escolhas copiadas. Cole no chat."); const fail = () => { const r = document.createRange(); r.selectNodeContents($("#sumList")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast("Texto selecionado. Use Ctrl+C para copiar."); };
+    try { navigator.clipboard.writeText(txt).then(ok, fail); } catch(err) { fail(); } return; }
+  if (t.id === "resetOpts") { S = Object.assign({}, DEF); saveOpts(); renderDrawer(); render(); return; }
+});
+document.addEventListener("submit", e => { if (e.target.id === "nmForm") { e.preventDefault(); createMeeting(); } });
+const fmtSize = b => b >= 1048576 ? (b/1048576).toFixed(1).replace(".", ",") + " MB" : Math.max(1, Math.round(b/1024)) + " KB";
+function handleFiles(files){
+  const m = MEETINGS.find(x => x.id === UI.meetingId); if (!m) return;
+  const OK = { pdf:"pdf", doc:"doc", docx:"doc", xls:"xls", xlsx:"xls", csv:"xls", ppt:"ppt", pptx:"ppt", png:"img", jpg:"img", jpeg:"img" };
+  Array.from(files).forEach(file => {
+    const ext = (file.name.split(".").pop() || "").toLowerCase();
+    if (!OK[ext]) { toast(`"${file.name}" não foi enviado: formato não aceito. Use PDF, Word, Excel, PowerPoint ou imagem.`); return; }
+    if (file.size > 50 * 1048576) { toast(`"${file.name}" tem mais de 50 MB. Comprima o arquivo ou divida em partes.`); return; }
+    const u = { n:file.name, ext:OK[ext], pct:0, item:Number(UI.upItem) };
+    UI.uploads.push(u);
+    const timer = setInterval(() => {
+      u.pct = Math.min(100, u.pct + 8 + Math.round(Math.random() * 12));
+      if (u.pct >= 100) { clearInterval(timer); UI.uploads = UI.uploads.filter(x => x !== u);
+        m.docs.push({ n:file.name.replace(/\.[^.]+$/, ""), ext:u.ext, tam:fmtSize(file.size), v:"v1", lidos:0, item:u.item, novo:true, por:"Ana Costa" }); UI.newDocs++; }
+      if (currentView() === "reuniao") render();
+    }, 180);
+  });
+  render();
+}
+document.addEventListener("dragover", e => { const d = e.target.closest && e.target.closest("#drop"); if (d) { e.preventDefault(); d.classList.add("over"); } });
+document.addEventListener("dragleave", e => { const d = e.target.closest && e.target.closest("#drop"); if (d) d.classList.remove("over"); });
+document.addEventListener("drop", e => { const d = e.target.closest && e.target.closest("#drop"); if (d) { e.preventDefault(); handleFiles(e.dataTransfer.files); } });
+document.addEventListener("change", e => {
+  if (e.target.id === "fileIn") { handleFiles(e.target.files); return; }
+  if (e.target.id === "upItem") { UI.upItem = e.target.value; return; } if (e.target.dataset.ch) { readModal(); NM.ch[e.target.dataset.ch] = e.target.checked; } if (e.target.id === "nmData" || e.target.id === "nmOrg") { readModal(); $("#prevBox").innerHTML = msgPreview(); } });
+document.addEventListener("input", e => { if (["nmPauta","nmLocal","nmHora"].includes(e.target.id)) { readModal(); $("#prevBox").innerHTML = msgPreview(); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if ($("#modal")) $("#modalRoot").innerHTML = ""; else openDrawer(false); } });
+$("#scrim").addEventListener("click", () => openDrawer(false));
+$("#q").addEventListener("keydown", e => { if (e.key === "Enter") toast("No sistema real: busca em atas, deliberações e no texto dos documentos."); });
+addEventListener("hashchange", () => { render(); scrollTo(0,0); });
+
+renderDrawer(); render();
+if (innerWidth >= 1280) openDrawer(true);
+})();
+</script>
