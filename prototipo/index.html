@@ -524,10 +524,10 @@ const OPTS = [
   { k:"chan", t:"Canais de mensagem na fase 1", d:"Por onde a convocação e os lembretes saem.", c:[["mail","Só e-mail","Decidido: começar só com e-mail. WhatsApp e SMS ficam para depois.",true],["mailwa","E-mail + WhatsApp","Exige conta WhatsApp Business verificada. Custo por conversa."],["all","E-mail + WhatsApp + SMS","SMS como reserva para quem não usa WhatsApp."]] },
   { k:"rsvp", t:"Confirmação de presença", d:"Como o conselheiro responde à convocação.", c:[["link","Link direto, sem login","Um toque no e-mail ou WhatsApp. Login só para abrir documentos.",true],["login","Exige login","Mais controle, mais atrito."]] }
 ];
-const DEF = Object.fromEntries(OPTS.map(o => [o.k, (o.c.find(c => c[3]) || o.c[0])[0]]));
+const DEF = { nav:"side", home:"next", acts:"kanban", meet:"tabs", pal:"grafite", dens:"compact", theme:"system", chan:"mail", rsvp:"link" };
 let S = Object.assign({}, DEF);
-try { const saved = JSON.parse(localStorage.getItem("conselho-opts") || "null"); if (saved) S = Object.assign(S, saved); } catch(e) {}
-const saveOpts = () => { try { localStorage.setItem("conselho-opts", JSON.stringify(S)); } catch(e) {} };
+try { const saved = JSON.parse(localStorage.getItem("conselho-opts-v2") || "null"); if (saved) S = Object.assign(S, saved); } catch(e) {}
+const saveOpts = () => { try { localStorage.setItem("conselho-opts-v2", JSON.stringify(S)); } catch(e) {} };
 
 let UI = { meetingId:"m11", tab:"pauta", filter:"all", uploads:[], newDocs:0, upItem:2 };
 
@@ -738,11 +738,11 @@ function renderDrawer(){
   const body = OPTS.map((o,i) => {
     const ch = o.sw
       ? `<div class="swatches" role="radiogroup" aria-label="${o.t}">${o.c.map(c => `<button class="sw" role="radio" aria-checked="${S[o.k]===c[0]}" data-opt="${o.k}" data-val="${c[0]}"><i style="background:linear-gradient(90deg,${PAL[c[0]][0]} 50%,${PAL[c[0]][1]} 50%)"></i>${c[1]}</button>`).join("")}</div>`
-      : `<div class="choices" role="radiogroup" aria-label="${o.t}">${o.c.map(c => `<button class="choice" role="radio" aria-checked="${S[o.k]===c[0]}" data-opt="${o.k}" data-val="${c[0]}"><span class="radio"></span><span><b>${c[1]}${c[3]?` <span class="rec">Sugerido</span>`:""}</b>${c[2]?`<small>${c[2]}</small>`:""}</span></button>`).join("")}</div>`;
+      : `<div class="choices" role="radiogroup" aria-label="${o.t}">${o.c.map(c => `<button class="choice" role="radio" aria-checked="${S[o.k]===c[0]}" data-opt="${o.k}" data-val="${c[0]}"><span class="radio"></span><span><b>${c[1]}${DEF[o.k]===c[0]?` <span class="rec">Escolhido</span>`:""}</b>${c[2]?`<small>${c[2]}</small>`:""}</span></button>`).join("")}</div>`;
     return `<div class="opt"><h3><span class="num">${i+1}.</span>${o.t}</h3><p>${o.d}</p>${ch}</div>`;
   }).join("");
   $("#drawerBody").innerHTML = body + `<div class="summary"><b>Suas escolhas</b><ol id="sumList">${summaryLines().map(l => `<li>${esc(l)}</li>`).join("")}</ol>
-    <div class="row" style="gap:8px"><button class="btn btn-primary btn-sm" id="copySum">Copiar escolhas</button><button class="btn btn-sm btn-ghost" id="resetOpts">Voltar ao sugerido</button></div>
+    <div class="row" style="gap:8px"><button class="btn btn-primary btn-sm" id="copySum">Copiar escolhas</button><button class="btn btn-sm btn-ghost" id="resetOpts">Voltar ao escolhido</button></div>
     <div class="li-sub" style="margin-top:8px">Cole o texto copiado no chat para eu seguir com o MVP.</div></div>`;
 }
 function summaryLines(){ return OPTS.map(o => `${o.t}: ${o.c.find(c => c[0] === S[o.k])[1]}`); }

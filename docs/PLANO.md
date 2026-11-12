@@ -9,8 +9,27 @@
 | 3 | Mensagens | Fase 1 só com e-mail. WhatsApp e SMS depois |
 | 4 | Atas | Assinadas à mão. O PDF digitalizado é enviado ao sistema e vira o arquivo oficial |
 | 5 | Banco | Supabase, projeto **Tarefas** (região São Paulo, plano Pro) |
+| 6 | Confirmação de presença | Link direto no e-mail, sem login. Login só para abrir documentos |
 
-Ainda em aberto (painel do protótipo): menu, tela inicial, visualização das ações, página da reunião, cor, densidade.
+## Interface (escolhida no protótipo)
+
+| Tema | Escolha |
+|------|---------|
+| Menu | Barra lateral (no celular vira barra de abas embaixo) |
+| Tela inicial | Foco na próxima reunião: contagem regressiva, quórum, material e o que falta preparar |
+| Deliberações e ações | Quadro por status: atrasada, vencendo, em dia, concluída |
+| Página da reunião | Abas: Pauta, Documentos, Presença, Ata, Deliberações |
+| Cor institucional | Grafite e ouro (`#7a5a10` no tema claro, `#dcb860` no escuro) |
+| Densidade | Compacta |
+| Tema | Segue o aparelho (claro ou escuro) |
+| Tipografia | Manrope (texto e interface) e Source Serif 4 (títulos) |
+
+Cores de status, fixas em todo o sistema: verde = em dia, âmbar = vencendo, vermelho = atrasado, cinza = concluído.
+
+## Ainda em aberto
+
+1. Conselheiros podem enviar arquivos ou só ler? Sugestão: só a secretaria e os relatores enviam.
+2. O link de envio para relatores entra no MVP ou na fase 2?
 
 ## Arquitetura
 
